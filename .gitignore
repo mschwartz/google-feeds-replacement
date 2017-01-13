@@ -2,6 +2,7 @@
 
 ### keep extjs private
 public/ext-6.2.1
+.idea
 
 ### Node template
 # Logs

@@ -4,11 +4,14 @@
 
 const Feed = require('./lib/Feed'),
     express = require('express'),
-    serveStatic = require('serve-static')
+    serveStatic = require('serve-static'),
+    bodyParser = require('body-parser'),
     cors = require('cors'),
     app = express()
 
 app.use(cors())
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded())
 
 app.use(serveStatic('public/ext-6.2.1'))
 
@@ -25,6 +28,7 @@ app.get('/jsapi', async function(req, res) {
                 Feed: function(url) {
                     console.log('Feed: ' + url)
                     return {
+                        url: url,
                         setNumEntries: function(n) {
                             console.log('setNumEntries: ' + n);
                         },
@@ -35,7 +39,6 @@ app.get('/jsapi', async function(req, res) {
                         },
                         load: function(callback) {
                             console.log('load: ' + url);
-                            debugger
                             Ext.Ajax.request({
                                 url: '//pd.ddns.us:8080/feed',
                                 params: {
@@ -54,22 +57,26 @@ app.get('/jsapi', async function(req, res) {
 })
 
 app.post('/feed', async function(req, res) {
+    console.dir(req.body)
+    const url = req.body.url
     try {
-        const data = await new Feed('http://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml').fetch()
-        console.dir(data[0])
+        const data = await new Feed(url).fetch()
         res.send({
-            feed: data.map((r) => {
-                return {
-                    title: r.title,
-                    author: r.author,
-                    link: r.link,
-                    categories: r.categories,
-                    url: r.link,
-                    publishedDate: r.pubDate,
-                    content: r.description,
-                    contentSnippet: r.summary
-                }
-            })
+            total: data.length,
+            feed:  {
+                entries: data.map((r) => {
+                    return {
+                        title: r.title,
+                        author: r.author,
+                        link: r.link,
+                        categories: r.categories,
+                        url: r.link,
+                        publishedDate: r.pubDate,
+                        content: r.description,
+                        contentSnippet: r.summary
+                    }
+                })
+            }
         })
     }
     catch (e) {
