@@ -65,7 +65,7 @@ app.post('/feed', async function(req, res) {
                         author: r.author,
                         link: r.link,
                         categories: r.categories,
-                        url: r.link,
+                        url: url,
                         publishedDate: r.pubDate,
                         content: r.description,
                         contentSnippet: r.summary
